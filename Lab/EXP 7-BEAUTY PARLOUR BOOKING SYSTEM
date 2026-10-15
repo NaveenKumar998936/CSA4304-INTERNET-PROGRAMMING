@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glow Beauty Parlour Booking</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#fff5f8;color:#392630}
+header{background:#792650;color:white;padding:18px 5%;display:flex;
+justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h1{margin:0;color:#ffd6e6}
+nav{display:flex;gap:5px;flex-wrap:wrap}
+button{border:0;background:#b83270;color:white;padding:10px 13px;
+border-radius:6px;cursor:pointer;margin:3px}
+button:hover{background:#792650}
+main{max-width:1150px;margin:25px auto;padding:0 15px}
+.panel,.card{background:white;padding:22px;border-radius:12px;
+margin-bottom:20px;box-shadow:0 3px 12px #0000000c}
+h2{color:#9d285f;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+label{display:block;font-weight:bold;margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #e5bfd0;
+border-radius:6px;margin-bottom:14px;font:inherit}
+.hidden{display:none!important}
+.notice{background:#ffe6f0;padding:12px;border-radius:7px;margin:10px 0}
+.item{padding:14px 0;border-bottom:1px solid #f1d4e0}
+.danger{background:#c62828}
+.small{font-size:13px;color:#80596c}
+footer{text-align:center;padding:20px;color:#80596c}
+@media(max-width:600px){header{padding:15px}.panel{padding:15px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>💗 Glow Beauty Parlour</h1>
+<nav>
+<button onclick="show('login')">Login</button>
+<button onclick="show('register')">Register</button>
+<button onclick="openBooking()">Book Appointment</button>
+<button onclick="openDashboard()">My Account</button>
+<button onclick="openFeedback()">Feedback</button>
+<button onclick="adminLogin()">Salon Admin</button>
+<button onclick="logout()">Logout</button>
+</nav>
+</header>
+
+<main>
+<section id="login" class="panel">
+<h2>Customer Login</h2>
+<form id="loginForm">
+<label>Email</label><input type="email" id="loginEmail" required>
+<label>Password</label><input type="password" id="loginPassword" required>
+<button>Login</button>
+<button type="button" onclick="show('register')">Create Account</button>
+</form>
+<p id="loginMsg"></p>
+</section>
+
+<section id="register" class="panel hidden">
+<h2>Create Customer Account</h2>
+<form id="registerForm">
+<label>Full Name</label><input id="regName" required>
+<label>Email</label><input id="regEmail" type="email" required>
+<label>Phone Number</label><input id="regPhone" type="tel" required>
+<label>Password (minimum 6 characters)</label>
+<input id="regPassword" type="password" minlength="6" required>
+<label>Confirm Password</label>
+<input id="regConfirm" type="password" minlength="6" required>
+<button>Register</button>
+</form>
+<p id="registerMsg"></p>
+</section>
+
+<section id="booking" class="panel hidden">
+<h2>Find a Salon & Book an Appointment</h2>
+<div class="grid">
+<div><label>Search Parlour</label><input id="salonSearch" placeholder="Salon name or location"></div>
+<div><label>Beauty Service</label>
+<select id="service">
+<option>Haircut</option><option>Hair Styling</option>
+<option>Facial</option><option>Manicure</option>
+<option>Pedicure</option><option>Makeup</option>
+<option>Hair Coloring</option><option>Bridal Makeup</option>
+</select></div>
+<div><label>Stylist</label>
+<select id="stylist">
+<option>Ananya</option><option>Priya</option>
+<option>Meera</option><option>Divya</option>
+</select></div>
+<div><label>Appointment Date</label><input type="date" id="date" required></div>
+<div><label>Available Time</label>
+<select id="time">
+<option value="">Select a time</option>
+<option>09:00</option><option>10:00</option>
+<option>11:00</option><option>12:00</option>
+<option>13:00</option><option>14:00</option>
+<option>15:00</option><option>16:00</option>
+<option>17:00</option>
+</select></div>
+</div>
+<button onclick="searchSalons()">Search Salons</button>
+<div id="salonResults"></div>
+<div id="slotMessage" class="notice">Choose a date and stylist to check available times.</div>
+<form id="appointmentForm">
+<h3>Customer Details</h3>
+<label>Customer Name</label><input id="customerName" required>
+<label>Email</label><input id="customerEmail" type="email" required>
+<label>Phone Number</label><input id="customerPhone" type="tel" required>
+<label>Selected Salon</label>
+<select id="salon">
+<option>Glow Beauty Parlour - Main Street</option>
+<option>Elegant Beauty Studio - City Centre</option>
+<option>Rose Beauty Lounge - Market Road</option>
+</select>
+<p id="servicePrice" class="notice"></p>
+<label>Payment Type</label>
+<select id="paymentType">
+<option value="Full">Full Payment</option>
+<option value="Deposit">Pay 30% Deposit</option>
+<option value="Salon">Pay at Salon</option>
+</select>
+<p class="small">Demo payments only. No actual money will be collected.</p>
+<button type="submit">Book Appointment</button>
+</form>
+</section>
+
+<section id="payment" class="panel hidden">
+<h2>Appointment Payment</h2>
+<div id="paymentDetails" class="notice"></div>
+<label>Demo Payment Method</label>
+<select id="payMethod">
+<option>UPI Demo</option><option>Card Demo</option>
+<option>PayPal Demo</option>
+</select>
+<button onclick="confirmPayment()">Confirm Demo Payment</button>
+<button onclick="show('booking')">Back</button>
+</section>
+
+<section id="confirmation" class="panel hidden">
+<h2>Appointment Confirmation</h2>
+<div id="confirmationDetails"></div>
+<button onclick="printAppointment()">Print Appointment</button>
+<button onclick="openDashboard()">My Account</button>
+</section>
+
+<section id="dashboard" class="panel hidden">
+<h2>My Account</h2>
+<div id="profile"></div>
+<h3>Upcoming Appointments and History</h3>
+<div id="myAppointments"></div>
+</section>
+
+<section id="feedback" class="panel hidden">
+<h2>Customer Feedback</h2>
+<form id="feedbackForm">
+<label>Rating</label>
+<select id="rating"><option>5 - Excellent</option><option>4 - Very Good</option>
+<option>3 - Good</option><option>2 - Average</option><option>1 - Poor</option></select>
+<label>Your Comments</label><textarea id="comments" rows="4" required></textarea>
+<button>Submit Feedback</button>
+</form>
+<p id="feedbackMsg"></p>
+<h3>Customer Suggestions</h3><div id="feedbackList"></div>
+</section>
+
+<section id="admin" class="panel hidden">
+<h2>Salon Manager / Staff Dashboard</h2>
+<div id="adminStats" class="notice"></div>
+<h3>Manage Reservations</h3>
+<div id="adminAppointments"></div>
+<h3>Unavailable Hours / Lockout</h3>
+<form id="lockForm">
+<label>Stylist</label><select id="lockStylist">
+<option>Ananya</option><option>Priya</option><option>Meera</option><option>Divya</option>
+</select>
+<label>Date</label><input id="lockDate" type="date" required>
+<label>Time</label><select id="lockTime">
+<option>09:00</option><option>10:00</option><option>11:00</option>
+<option>12:00</option><option>13:00</option><option>14:00</option>
+<option>15:00</option><option>16:00</option><option>17:00</option>
+</select>
+<button>Block Time Slot</button>
+</form>
+<div id="blockedList"></div>
+<h3>Add Salon Service</h3>
+<form id="serviceForm">
+<label>Service Name</label><input id="newService" required>
+<label>Price (₹)</label><input id="newPrice" type="number" min="1" required>
+<button>Add Service</button>
+</form>
+<div id="serviceList"></div>
+</section>
+</main>
+
+<footer>Glow Beauty Parlour | Internet Programming Lab Experiment</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const times=["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+const defaultServices={
+"Haircut":300,"Hair Styling":500,"Facial":800,"Manicure":350,
+"Pedicure":450,"Makeup":1500,"Hair Coloring":1200,"Bridal Makeup":5000
+};
+const salons=[
+{name:"Glow Beauty Parlour",location:"Main Street"},
+{name:"Elegant Beauty Studio",location:"City Centre"},
+{name:"Rose Beauty Lounge",location:"Market Road"}
+];
+function read(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return []}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function currentUser(){try{return JSON.parse(sessionStorage.getItem("glowUser"))}catch(e){return null}}
+function show(id){
+ document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+ $(id).classList.remove("hidden");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function loggedIn(){
+ if(!currentUser()){alert("Please log in first.");show("login");return false}
+ return true;
+}
+function getServices(){
+ return {...defaultServices,...(JSON.parse(localStorage.getItem("glowServices")||"{}"))};
+}
+function updateServicePrice(){
+ const price=getServices()[$("service").value]||500;
+ $("servicePrice").textContent="Service price: ₹"+price;
+}
+$("service").addEventListener("change",updateServicePrice);
+const today=new Date();
+$("date").min=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+
+$("registerForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const users=read("glowUsers"),email=$("regEmail").value.trim().toLowerCase();
+ const password=$("regPassword").value;
+ if(password!==$("regConfirm").value){$("registerMsg").textContent="Passwords do not match.";return}
+ if(password.length<6){$("registerMsg").textContent="Password must be at least 6 characters.";return}
+ if(users.some(u=>u.email===email)){$("registerMsg").textContent="Email already registered.";return}
+ users.push({name:$("regName").value.trim(),email,phone:$("regPhone").value.trim(),password});
+ save("glowUsers",users);$("registerForm").reset();
+ alert("Registration successful. Please log in.");show("login");
+});
+$("loginForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const email=$("loginEmail").value.trim().toLowerCase();
+ const u=read("glowUsers").find(x=>x.email===email&&x.password===$("loginPassword").value);
+ if(!u){$("loginMsg").textContent="Invalid email or password.";return}
+ sessionStorage.setItem("glowUser",JSON.stringify({name:u.name,email:u.email,phone:u.phone}));
+ alert("Welcome "+u.name+"!");
+ openBooking();
+});
+function logout(){sessionStorage.removeItem("glowUser");alert("Logged out.");show("login")}
+
+function openBooking(){
+ if(!loggedIn())return;
+ const u=currentUser();
+ $("customerName").value=u.name;$("customerEmail").value=u.email;$("customerPhone").value=u.phone||"";
+ updateServicePrice();searchSalons();show("booking");
+}
+function searchSalons(){
+ const q=$("salonSearch").value.trim().toLowerCase();
+ $("salonResults").innerHTML="";
+ const found=salons.filter(s=>(s.name+" "+s.location).toLowerCase().includes(q));
+ found.forEach(s=>{
+  const p=document.createElement("p");p.textContent=s.name+" — "+s.location;
+  $("salonResults").appendChild(p);
+ });
+ if(!found.length)$("salonResults").textContent="No matching salons found.";
+ checkSlots();
+}
+$("salonSearch").addEventListener("input",searchSalons);
+$("date").addEventListener("change",checkSlots);
+$("stylist").addEventListener("change",checkSlots);
+
+function checkSlots(){
+ const date=$("date").value,stylist=$("stylist").value;
+ if(!date){$("slotMessage").textContent="Select a date to check available slots.";return}
+ const bookings=read("glowAppointments");
+ const blocks=read("glowBlocks");
+ const available=times.filter(t=>
+ !blocks.some(b=>b.date===date&&b.stylist===stylist&&b.time===t)&&
+ !bookings.some(b=>b.date===date&&b.stylist===stylist&&b.time===t&&
+ ["Confirmed","Pending Payment"].includes(b.status))
+ );
+ $("slotMessage").textContent="Available slots for "+stylist+" on "+date+": "+
+ (available.join(", ")||"No available slots");
+ $("time").innerHTML="";
+ available.forEach(t=>{
+  const o=document.createElement("option");o.value=t;o.textContent=t;$("time").appendChild(o);
+ });
+ if(!available.length){
+  const o=document.createElement("option");o.value="";o.textContent="No available slots";$("time").appendChild(o);
+ }
+}
+$("appointmentForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ if(!loggedIn())return;
+ const u=currentUser(),date=$("date").value,time=$("time").value,stylist=$("stylist").value;
+ if(!date||!time){alert("Select an available date and time.");return}
+ if($("customerEmail").value.trim().toLowerCase()!==u.email){
+  alert("Use your logged-in email.");return;
+ }
+ if(date<new Date().toISOString().slice(0,10)){alert("Choose a future date.");return}
+ const blocked=read("glowBlocks").some(b=>b.date===date&&b.stylist===stylist&&b.time===time);
+ const conflict=read("glowAppointments").some(b=>b.date===date&&b.stylist===stylist&&b.time===time&&["Confirmed","Pending Payment"].includes(b.status));
+ if(blocked||conflict){alert("This slot is no longer available.");checkSlots();return}
+ const total=getServices()[$("service").value]||500;
+ const type=$("paymentType").value;
+ const amount=type==="Full"?total:type==="Deposit"?Math.ceil(total*.3):0;
+ const appointment={
+ id:"GL"+Date.now(),name:u.name,email:u.email,phone:$("customerPhone").value,
+ salon:$("salon").value,service:$("service").value,stylist,date,time,
+ total,amountPaid:0,due:total,requiredAmount:amount,paymentType:type,
+ paymentMethod:"",status:type==="Salon"?"Confirmed":"Pending Payment",
+ created:new Date().toLocaleString()
+ };
+ const all=read("glowAppointments");all.push(appointment);save("glowAppointments",all);
+ if(type==="Salon"){appointment.amountPaid=0;appointment.due=total;save("glowAppointments",all);showConfirmation(appointment)}
+ else{
+  sessionStorage.setItem("glowPending",appointment.id);
+  $("paymentDetails").textContent="Appointment "+appointment.id+" | "+appointment.service+
+   " | Total ₹"+total+" | Pay now ₹"+amount;
+  show("payment");
+ }
+});
+function confirmPayment(){
+ const id=sessionStorage.getItem("glowPending"),all=read("glowAppointments");
+ const a=all.find(x=>x.id===id);
+ if(!a){alert("Appointment not found.");return}
+ const conflict=all.some(x=>x.id!==a.id&&x.date===a.date&&x.stylist===a.stylist&&x.time===a.time&&x.status==="Confirmed");
+ if(conflict){a.status="Cancelled";save("glowAppointments",all);alert("Slot has become unavailable.");show("booking");checkSlots();return}
+ a.amountPaid=a.requiredAmount;a.due=a.total-a.amountPaid;
+ a.paymentMethod=$("payMethod").value+" (Demo)";
+ a.status="Confirmed";
+ save("glowAppointments",all);
+ sessionStorage.removeItem("glowPending");
+ showConfirmation(a);
+}
+function showConfirmation(a){
+ $("confirmationDetails").innerHTML="";
+ [["Appointment ID",a.id],["Customer",a.name],["Salon",a.salon],
+ ["Service",a.service],["Stylist",a.stylist],["Date",a.date],
+ ["Time",a.time],["Total","₹"+a.total],["Paid","₹"+a.amountPaid],
+ ["Balance","₹"+a.due],["Payment",a.paymentMethod||"Pay at Salon"],
+ ["Status",a.status]].forEach(([k,v])=>{
+  const p=document.createElement("p"),b=document.createElement("strong");
+  b.textContent=k+": ";p.append(b,document.createTextNode(v));$("confirmationDetails").appendChild(p);
+ });
+ show("confirmation");
+}
+function printAppointment(){
+ const w=window.open("","_blank");
+ if(!w){alert("Allow pop-ups to print.");return}
+ const d=document.createElement("div");d.innerHTML="";
+ const source=$("confirmationDetails").innerText;
+ const p=w.document.createElement("pre");p.textContent="GLOW BEAUTY PARLOUR\n"+source;
+ w.document.body.appendChild(p);w.document.title="Appointment";
+ w.focus();w.print();
+}
+function openDashboard(){
+ if(!loggedIn())return;
+ const u=currentUser();
+ $("profile").textContent="Name: "+u.name+" | Email: "+u.email+" | Phone: "+(u.phone||"");
+ $("myAppointments").innerHTML="";
+ const all=read("glowAppointments").filter(a=>a.email===u.email).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ if(!all.length)$("myAppointments").textContent="No appointments found.";
+ all.forEach(a=>{
+  const div=document.createElement("div");div.className="item";
+  const p=document.createElement("p");
+  p.textContent=a.id+" | "+a.service+" | "+a.salon+" | "+a.stylist+" | "+a.date+" "+a.time+
+   " | Paid ₹"+a.amountPaid+" | Balance ₹"+a.due+" | "+a.status;
+  div.appendChild(p);
+  if(["Confirmed","Pending Payment"].includes(a.status)){
+   const edit=document.createElement("button");edit.textContent="Reschedule";
+   edit.onclick=()=>{
+    const d=prompt("Enter new date (YYYY-MM-DD)",a.date);
+    if(!d)return;
+    const t=prompt("Enter new time (e.g. 10:00)",a.time);
+    if(!t)return;
+    if(d<new Date().toISOString().slice(0,10)||!times.includes(t)){
+     alert("Invalid date or time.");return;
+    }
+    const conflict=read("glowAppointments").some(x=>x.id!==a.id&&x.date===d&&x.time===t&&x.stylist===a.stylist&&["Confirmed","Pending Payment"].includes(x.status));
+    const blocked=read("glowBlocks").some(x=>x.date===d&&x.time===t&&x.stylist===a.stylist);
+    if(conflict||blocked){alert("Slot unavailable.");return}
+    const bookings=read("glowAppointments"),i=bookings.findIndex(x=>x.id===a.id);
+    bookings[i].date=d;bookings[i].time=t;save("glowAppointments",bookings);
+    alert("Appointment rescheduled.");openDashboard();
+   };
+   const cancel=document.createElement("button");cancel.textContent="Cancel";cancel.className="danger";
+   cancel.onclick=()=>{
+    if(confirm("Cancel appointment?")){
+     const bookings=read("glowAppointments"),i=bookings.findIndex(x=>x.id===a.id);
+     bookings[i].status="Cancelled";save("glowAppointments",bookings);openDashboard();
+    }
+   };
+   div.append(edit,cancel);
+  }
+  $("myAppointments").appendChild(div);
+ });
+ show("dashboard");
+}
+function openFeedback(){
+ if(!loggedIn())return;
+ $("feedbackList").innerHTML="";
+ read("glowFeedback").forEach(f=>{
+  const p=document.createElement("p");p.textContent=f.rating+" — "+f.comments;
+  $("feedbackList").appendChild(p);
+ });
+ show("feedback");
+}
+$("feedbackForm").addEventListener("submit",e=>{
+ e.preventDefault();if(!loggedIn())return;
+ const u=currentUser(),all=read("glowFeedback");
+ all.push({email:u.email,rating:$("rating").value,comments:$("comments").value});
+ save("glowFeedback",all);$("feedbackMsg").textContent="Thank you for your feedback!";
+ $("comments").value="";openFeedback();
+});
+function adminLogin(){
+ if(prompt("Demo admin password:")!=="admin123"){alert("Incorrect password.");return}
+ renderAdmin();show("admin");
+}
+function renderAdmin(){
+ const all=read("glowAppointments");
+ $("adminStats").textContent="Total appointments: "+all.length+
+ " | Confirmed: "+all.filter(a=>a.status==="Confirmed").length+
+ " | Pending payment: "+all.filter(a=>a.status==="Pending Payment").length;
+ $("adminAppointments").innerHTML="";
+ all.forEach(a=>{
+  const div=document.createElement("div");div.className="item";
+  const p=document.createElement("p");
+  p.textContent=a.id+" | "+a.name+" | "+a.phone+" | "+a.service+" | "+a.stylist+
+   " | "+a.date+" "+a.time+" | "+a.status;
+  const select=document.createElement("select");
+  ["Confirmed","Preparing","Completed","Cancelled","Pending Payment"].forEach(s=>{
+   const o=document.createElement("option");o.value=s;o.textContent=s;
+   if(a.status===s)o.selected=true;select.appendChild(o);
+  });
+  select.onchange=()=>{
+   const b=read("glowAppointments"),i=b.findIndex(x=>x.id===a.id);
+   if(i>=0)b[i].status=select.value;save("glowAppointments",b);renderAdmin();
+  };
+  const call=document.createElement("button");call.textContent="Call Customer";
+  call.onclick=()=>{if(a.phone)location.href="tel:"+a.phone;else alert("No phone number available.")};
+  const sms=document.createElement("button");sms.textContent="SMS";
+  sms.onclick=()=>{if(a.phone)location.href="sms:"+a.phone+"?body="+encodeURIComponent("Your salon appointment is "+a.date+" at "+a.time);else alert("No phone number available.")};
+  div.append(p,select,call,sms);$("adminAppointments").appendChild(div);
+ });
+ $("blockedList").innerHTML="";
+ read("glowBlocks").forEach(b=>{
+  const p=document.createElement("p");p.textContent=b.stylist+" | "+b.date+" | "+b.time;
+  const del=document.createElement("button");del.textContent="Unblock";
+  del.onclick=()=>{save("glowBlocks",read("glowBlocks").filter(x=>!(x.date===b.date&&x.time===b.time&&x.stylist===b.stylist)));renderAdmin()};
+  p.appendChild(del);$("blockedList").appendChild(p);
+ });
+ $("serviceList").innerHTML="";
+ Object.entries(getServices()).forEach(([name,price])=>{
+  const p=document.createElement("p");p.textContent=name+" — ₹"+price;$("serviceList").appendChild(p);
+ });
+}
+$("lockForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const b=read("glowBlocks"),date=$("lockDate").value,time=$("lockTime").value,stylist=$("lockStylist").value;
+ if(read("glowAppointments").some(a=>a.date===date&&a.time===time&&a.stylist===stylist&&a.status==="Confirmed")){
+  alert("A confirmed booking exists at that time.");return;
+ }
+ if(!b.some(x=>x.date===date&&x.time===time&&x.stylist===stylist))b.push({date,time,stylist});
+ save("glowBlocks",b);renderAdmin();alert("Time slot blocked.");
+});
+$("serviceForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const s=getServices();s[$("newService").value.trim()] = Number($("newPrice").value);
+ localStorage.setItem("glowServices",JSON.stringify(s));
+ $("serviceForm").reset();renderAdmin();alert("Service added.");
+});
+updateServicePrice();
+show("login");
+</script>
+</body>
+</html>
