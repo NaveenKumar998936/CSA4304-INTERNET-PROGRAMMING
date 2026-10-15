@@ -1,0 +1,1083 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyBook Flight Reservation</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+header {
+    background: #10294c;
+    color: white;
+    padding: 18px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+header h2 {
+    margin: 0;
+}
+nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+main {
+    max-width: 1050px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+.hero {
+    background: linear-gradient(120deg, #10294c, #1672e8);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+.panel {
+    background: white;
+    padding: 22px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0000000c;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+label {
+    font-weight: bold;
+    font-size: 14px;
+}
+input, select, textarea {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 15px;
+}
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 7px;
+    background: #1769e0;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    opacity: 0.88;
+}
+.secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+.danger {
+    background: #dc2626;
+}
+.hidden {
+    display: none !important;
+}
+.actions {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+.flight {
+    border: 1px solid #dbe3ed;
+    padding: 15px;
+    margin-top: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.price {
+    color: #1769e0;
+    font-size: 20px;
+    font-weight: bold;
+}
+.seats {
+    display: grid;
+    grid-template-columns: repeat(4, 55px);
+    gap: 9px;
+    margin: 15px 0;
+}
+.seat {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+.seat.selected {
+    background: #1769e0;
+    color: white;
+}
+.seat.taken {
+    background: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+}
+.ticket {
+    border: 2px dashed #94a3b8;
+    border-radius: 12px;
+    padding: 20px;
+}
+.status {
+    color: #15803d;
+    font-weight: bold;
+}
+.cancelled {
+    color: #dc2626;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+th {
+    background: #eaf1fa;
+}
+.table-wrap {
+    overflow-x: auto;
+}
+.note {
+    background: #fff7d6;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+@media print {
+    header, .hero, footer, .no-print {
+        display: none !important;
+    }
+    body {
+        background: white;
+    }
+    main {
+        margin: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>✈ SkyBook</h2>
+
+    <nav id="navigation" class="hidden">
+        <button onclick="showPage('searchPage')">Search Flights</button>
+        <button onclick="showPage('ticketsPage')">My Tickets</button>
+        <button onclick="showPage('feedbackPage')">Feedback</button>
+        <button id="adminButton" class="hidden"
+                onclick="showPage('adminPage')">Admin</button>
+        <button class="secondary" onclick="logout()">Logout</button>
+    </nav>
+</header>
+
+<main>
+
+<div class="hero">
+    <h1>Flight Reservation System</h1>
+    <p>Search flights, select seats and manage your tickets online.</p>
+</div>
+
+<!-- LOGIN AND REGISTRATION -->
+<section id="authPage" class="panel">
+    <h2 id="authHeading">Customer Login</h2>
+
+    <div id="loginForm">
+        <div class="grid">
+            <div class="field">
+                <label>Email</label>
+                <input id="loginEmail" type="email"
+                       placeholder="Enter email">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input id="loginPassword" type="password"
+                       placeholder="Enter password">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="login()">Login</button>
+            <button class="secondary" onclick="toggleAuth('register')">
+                Register
+            </button>
+            <button class="secondary" onclick="toggleAuth('forgot')">
+                Forgot Password
+            </button>
+        </div>
+
+        <p class="note">
+            Demo admin login: admin@skybook.com<br>
+            Password: admin123
+        </p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+        <div class="grid">
+            <div class="field">
+                <label>Full Name</label>
+                <input id="regName" placeholder="Enter name">
+            </div>
+            <div class="field">
+                <label>Email</label>
+                <input id="regEmail" type="email"
+                       placeholder="Enter email">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input id="regPassword" type="password"
+                       placeholder="At least 4 characters">
+            </div>
+        </div>
+        <div class="actions">
+            <button onclick="register()">Create Account</button>
+            <button class="secondary" onclick="toggleAuth('login')">
+                Back to Login
+            </button>
+        </div>
+    </div>
+
+    <div id="forgotForm" class="hidden">
+        <div class="field">
+            <label>Registered Email</label>
+            <input id="forgotEmail" type="email">
+        </div>
+        <div class="field" style="margin-top:10px">
+            <label>New Password</label>
+            <input id="forgotPassword" type="password">
+        </div>
+        <div class="actions">
+            <button onclick="resetPassword()">Reset Password</button>
+            <button class="secondary" onclick="toggleAuth('login')">
+                Back to Login
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- SEARCH FLIGHTS -->
+<section id="searchPage" class="panel hidden">
+    <h2>Search Flights</h2>
+
+    <div class="grid">
+        <div class="field">
+            <label>From</label>
+            <select id="from">
+                <option>Hyderabad</option>
+                <option>Chennai</option>
+                <option>Bengaluru</option>
+                <option>Mumbai</option>
+                <option>Delhi</option>
+                <option>Kolkata</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Destination</label>
+            <select id="to">
+                <option>Delhi</option>
+                <option>Hyderabad</option>
+                <option>Chennai</option>
+                <option>Bengaluru</option>
+                <option>Mumbai</option>
+                <option>Kolkata</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Travel Date</label>
+            <input id="travelDate" type="date">
+        </div>
+
+        <div class="field">
+            <label>Travel Class</label>
+            <select id="travelClass">
+                <option>Economy</option>
+                <option>Business</option>
+                <option>First</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Passengers</label>
+            <select id="passengers">
+                <option value="1">1 Passenger</option>
+                <option value="2">2 Passengers</option>
+                <option value="3">3 Passengers</option>
+                <option value="4">4 Passengers</option>
+                <option value="5">5 Passengers</option>
+                <option value="6">6 Passengers</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button onclick="searchFlights()">Search Flights</button>
+    </div>
+
+    <div id="flightResults"></div>
+
+    <p class="note">
+        These are sample flights and fares for the lab demonstration.
+    </p>
+</section>
+
+<!-- BOOK TICKET -->
+<section id="bookingPage" class="panel hidden">
+    <h2>Book Ticket</h2>
+    <div id="selectedFlightInfo"></div>
+
+    <h3>Select Seats</h3>
+    <p>Blue = available, dark blue = selected, grey = booked.</p>
+    <div id="seatGrid" class="seats"></div>
+    <p id="seatInfo"></p>
+
+    <h3>Passenger Details</h3>
+    <div id="passengerFields" class="grid"></div>
+
+    <h3>Payment</h3>
+    <div class="grid">
+        <div class="field">
+            <label>Payment Method</label>
+            <select id="paymentMethod">
+                <option>Demo Card</option>
+                <option>UPI Demo</option>
+                <option>Net Banking Demo</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Demo Payment Reference</label>
+            <input id="paymentReference"
+                   placeholder="Enter any demo reference">
+        </div>
+    </div>
+
+    <p class="note">
+        This is a simulated payment. No real money is charged.
+        Never enter real card details in this demo.
+    </p>
+
+    <div class="actions">
+        <button onclick="confirmBooking()">Pay & Confirm</button>
+        <button class="secondary" onclick="showPage('searchPage')">
+            Back
+        </button>
+    </div>
+    <p id="bookingError" style="color:red"></p>
+</section>
+
+<!-- MY TICKETS -->
+<section id="ticketsPage" class="panel hidden">
+    <h2>My Tickets / Booking History</h2>
+    <div id="ticketList"></div>
+</section>
+
+<!-- PRINTABLE TICKET -->
+<section id="ticketPage" class="panel hidden">
+    <h2>Flight E-Ticket</h2>
+    <div id="ticketOutput"></div>
+    <div class="actions no-print">
+        <button onclick="window.print()">Print Ticket</button>
+        <button class="secondary" onclick="showPage('ticketsPage')">
+            My Tickets
+        </button>
+    </div>
+</section>
+
+<!-- FEEDBACK -->
+<section id="feedbackPage" class="panel hidden">
+    <h2>Customer Feedback</h2>
+
+    <div class="field">
+        <label>Rating</label>
+        <select id="rating">
+            <option>5 - Excellent</option>
+            <option>4 - Very Good</option>
+            <option>3 - Good</option>
+            <option>2 - Fair</option>
+            <option>1 - Poor</option>
+        </select>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+        <label>Comments</label>
+        <textarea id="feedbackText"
+                  placeholder="Enter your feedback"></textarea>
+    </div>
+
+    <div class="actions">
+        <button onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+    <p id="feedbackMessage"></p>
+</section>
+
+<!-- ADMIN PANEL -->
+<section id="adminPage" class="panel hidden">
+    <h2>Admin Dashboard and Report</h2>
+    <div id="adminStats" class="grid"></div>
+
+    <h3>All Bookings</h3>
+    <div class="table-wrap" id="adminReport"></div>
+
+    <h3>Add Flight Schedule</h3>
+    <div class="grid">
+        <div class="field">
+            <label>Flight Number</label>
+            <input id="newFlightNo" placeholder="SB 707">
+        </div>
+        <div class="field">
+            <label>From</label>
+            <input id="newFrom" placeholder="Hyderabad">
+        </div>
+        <div class="field">
+            <label>To</label>
+            <input id="newTo" placeholder="Delhi">
+        </div>
+        <div class="field">
+            <label>Departure</label>
+            <input id="newDeparture" placeholder="10:30">
+        </div>
+        <div class="field">
+            <label>Arrival</label>
+            <input id="newArrival" placeholder="12:45">
+        </div>
+        <div class="field">
+            <label>Base Fare (₹)</label>
+            <input id="newFare" type="number" min="1">
+        </div>
+        <div class="field">
+            <label>Seat Count</label>
+            <input id="newSeats" type="number" min="1" value="24">
+        </div>
+    </div>
+
+    <div class="actions">
+        <button onclick="addFlight()">Add Flight</button>
+        <button class="secondary" onclick="exportReport()">
+            Export CSV Report
+        </button>
+    </div>
+
+    <h3>Customer Feedback Report</h3>
+    <div id="feedbackReport"></div>
+</section>
+
+</main>
+
+<footer>SkyBook Flight Reservation System | Internet Programming Lab</footer>
+
+<script>
+// DATA STORAGE
+const USERS = "skybook_users";
+const FLIGHTS = "skybook_flights";
+const BOOKINGS = "skybook_bookings";
+const FEEDBACK = "skybook_feedback";
+
+function getData(key) {
+    return JSON.parse(localStorage.getItem(key) || "[]");
+}
+function saveData(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+const defaultFlights = [
+    {id:"F101", no:"SB 101", from:"Hyderabad", to:"Delhi",
+     depart:"06:30", arrive:"08:50", fare:4200, seats:24},
+    {id:"F102", no:"SB 102", from:"Hyderabad", to:"Mumbai",
+     depart:"09:15", arrive:"11:00", fare:3600, seats:24},
+    {id:"F103", no:"SB 103", from:"Chennai", to:"Bengaluru",
+     depart:"12:20", arrive:"13:20", fare:2200, seats:24},
+    {id:"F104", no:"SB 104", from:"Bengaluru", to:"Delhi",
+     depart:"15:10", arrive:"18:00", fare:5100, seats:24},
+    {id:"F105", no:"SB 105", from:"Mumbai", to:"Kolkata",
+     depart:"18:00", arrive:"20:45", fare:4700, seats:24},
+    {id:"F106", no:"SB 106", from:"Delhi", to:"Chennai",
+     depart:"20:10", arrive:"23:00", fare:4900, seats:24}
+];
+
+if (!localStorage.getItem(FLIGHTS)) {
+    saveData(FLIGHTS, defaultFlights);
+}
+
+if (!getData(USERS).some(u => u.email === "admin@skybook.com")) {
+    saveData(USERS, [
+        ...getData(USERS),
+        {
+            name:"Administrator",
+            email:"admin@skybook.com",
+            password:"admin123",
+            role:"admin"
+        }
+    ]);
+}
+
+let currentUser = null;
+let selectedFlight = null;
+let selectedSeats = [];
+
+function safe(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;",
+        '"':"&quot;", "'":"&#39;"
+    }[c]));
+}
+
+function toggleAuth(type) {
+    ["loginForm","registerForm","forgotForm"].forEach(id =>
+        document.getElementById(id).classList.add("hidden")
+    );
+    document.getElementById(type + "Form").classList.remove("hidden");
+
+    document.getElementById("authHeading").textContent =
+        type === "login" ? "Customer Login" :
+        type === "register" ? "Create Account" : "Forgot Password";
+}
+
+function register() {
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+    const password = document.getElementById("regPassword").value;
+
+    if (!name || !email || password.length < 4) {
+        alert("Enter your name, email and a password of at least 4 characters.");
+        return;
+    }
+
+    const users = getData(USERS);
+
+    if (users.some(u => u.email === email)) {
+        alert("Email already registered.");
+        return;
+    }
+
+    users.push({name, email, password, role:"customer"});
+    saveData(USERS, users);
+
+    alert("Registration successful. Please log in.");
+    document.getElementById("loginEmail").value = email;
+    toggleAuth("login");
+}
+
+function login() {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+
+    const user = getData(USERS).find(
+        u => u.email === email && u.password === password
+    );
+
+    if (!user) {
+        alert("Invalid email or password.");
+        return;
+    }
+
+    currentUser = user;
+    document.getElementById("authPage").classList.add("hidden");
+    document.getElementById("navigation").classList.remove("hidden");
+    document.getElementById("adminButton").classList.toggle(
+        "hidden", user.role !== "admin"
+    );
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById("travelDate").min =
+        new Date().toISOString().slice(0,10);
+    document.getElementById("travelDate").value =
+        tomorrow.toISOString().slice(0,10);
+
+    showPage("searchPage");
+}
+
+function resetPassword() {
+    const email = document.getElementById("forgotEmail").value.trim().toLowerCase();
+    const password = document.getElementById("forgotPassword").value;
+    const users = getData(USERS);
+    const user = users.find(u => u.email === email && u.role === "customer");
+
+    if (!user || password.length < 4) {
+        alert("Enter a registered customer email and a password of at least 4 characters.");
+        return;
+    }
+
+    user.password = password;
+    saveData(USERS, users);
+    alert("Password reset. Please log in.");
+    toggleAuth("login");
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById("navigation").classList.add("hidden");
+    document.getElementById("authPage").classList.remove("hidden");
+
+    ["searchPage","bookingPage","ticketsPage","ticketPage",
+     "feedbackPage","adminPage"].forEach(id =>
+        document.getElementById(id).classList.add("hidden")
+    );
+    toggleAuth("login");
+}
+
+function showPage(id) {
+    if (!currentUser) return;
+    if (id === "adminPage" && currentUser.role !== "admin") {
+        alert("Admin access only.");
+        return;
+    }
+
+    ["searchPage","bookingPage","ticketsPage","ticketPage",
+     "feedbackPage","adminPage"].forEach(page =>
+        document.getElementById(page).classList.add("hidden")
+    );
+
+    document.getElementById(id).classList.remove("hidden");
+
+    if (id === "ticketsPage") renderTickets();
+    if (id === "adminPage") renderAdmin();
+}
+
+// FLIGHT SEARCH
+function getBookings() {
+    return getData(BOOKINGS);
+}
+
+function getBookedSeats(flightId, date) {
+    return getBookings()
+        .filter(b => b.flightId === flightId &&
+                     b.date === date && b.status === "Confirmed")
+        .flatMap(b => b.seats);
+}
+
+function searchFlights() {
+    const from = document.getElementById("from").value;
+    const to = document.getElementById("to").value;
+    const date = document.getElementById("travelDate").value;
+    const travelClass = document.getElementById("travelClass").value;
+
+    if (from === to) {
+        alert("Origin and destination must be different.");
+        return;
+    }
+    if (!date || date < new Date().toISOString().slice(0,10)) {
+        alert("Choose a valid travel date.");
+        return;
+    }
+
+    const flights = getData(FLIGHTS).filter(f =>
+        f.from.toLowerCase() === from.toLowerCase() &&
+        f.to.toLowerCase() === to.toLowerCase()
+    );
+
+    const results = document.getElementById("flightResults");
+
+    if (!flights.length) {
+        results.innerHTML = "<p>No sample flights found. Try Hyderabad to Delhi or another listed route.</p>";
+        return;
+    }
+
+    results.innerHTML = flights.map(f => {
+        const available = f.seats - getBookedSeats(f.id, date).length;
+        const fare = Math.round(
+            f.fare * (travelClass === "Business" ? 2.1 :
+                      travelClass === "First" ? 3.2 : 1)
+        );
+
+        return `
+        <div class="flight">
+            <div>
+                <b>${safe(f.no)}</b>
+                <p>${safe(f.from)} → ${safe(f.to)}</p>
+                <small>${safe(f.depart)} - ${safe(f.arrive)}</small>
+            </div>
+            <div>
+                <p>${safe(date)}</p>
+                <small>${available} seats available</small>
+            </div>
+            <div>
+                <div class="price">₹${fare.toLocaleString("en-IN")}</div>
+                <small>${safe(travelClass)}</small>
+            </div>
+            <button ${available <= 0 ? "disabled" : ""}
+                onclick="startBooking('${safe(f.id)}',${fare},'${safe(travelClass)}','${safe(date)}')">
+                Select
+            </button>
+        </div>`;
+    }).join("");
+}
+
+// SEAT SELECTION AND BOOKING
+function startBooking(id, fare, travelClass, date) {
+    const flight = getData(FLIGHTS).find(f => f.id === id);
+    selectedFlight = {...flight, fare, travelClass, date};
+    selectedSeats = [];
+
+    const count = Number(document.getElementById("passengers").value);
+
+    document.getElementById("passengerFields").innerHTML =
+        Array.from({length:count}, (_,i) => `
+            <div class="field">
+                <label>Passenger ${i+1} Name</label>
+                <input id="pname${i}" placeholder="Full name">
+            </div>
+            <div class="field">
+                <label>Passenger ${i+1} Age</label>
+                <input id="page${i}" type="number" min="1" max="120">
+            </div>
+        `).join("");
+
+    document.getElementById("paymentReference").value = "";
+    document.getElementById("bookingError").textContent = "";
+    renderSeats();
+    showPage("bookingPage");
+}
+
+function renderSeats() {
+    const f = selectedFlight;
+    const booked = getBookedSeats(f.id, f.date);
+    const count = Number(document.getElementById("passengers").value);
+
+    document.getElementById("selectedFlightInfo").innerHTML = `
+        <h3>${safe(f.no)}: ${safe(f.from)} → ${safe(f.to)}</h3>
+        <p>Date: ${safe(f.date)} | Class: ${safe(f.travelClass)}</p>
+        <p>Fare per passenger: ₹${f.fare.toLocaleString("en-IN")}</p>
+        <p>Total: ₹${(f.fare * count).toLocaleString("en-IN")}</p>
+    `;
+
+    document.getElementById("seatGrid").innerHTML =
+        Array.from({length:f.seats}, (_,i) => {
+            const seat = String.fromCharCode(65 + Math.floor(i/6)) + (i%6+1);
+            const taken = booked.includes(seat);
+            const selected = selectedSeats.includes(seat);
+
+            return `<button class="seat ${taken ? "taken" : ""} ${selected ? "selected" : ""}"
+                ${taken ? "disabled" : ""}
+                onclick="toggleSeat('${seat}')">${seat}</button>`;
+        }).join("");
+
+    document.getElementById("seatInfo").textContent =
+        "Selected seats: " + (selectedSeats.join(", ") || "None") +
+        ` (${selectedSeats.length}/${count})`;
+}
+
+function toggleSeat(seat) {
+    const count = Number(document.getElementById("passengers").value);
+
+    if (selectedSeats.includes(seat)) {
+        selectedSeats = selectedSeats.filter(s => s !== seat);
+    } else if (selectedSeats.length < count) {
+        selectedSeats.push(seat);
+    } else {
+        alert("You have selected enough seats.");
+        return;
+    }
+    renderSeats();
+}
+
+function confirmBooking() {
+    const count = Number(document.getElementById("passengers").value);
+    const passengers = [];
+
+    for (let i = 0; i < count; i++) {
+        const name = document.getElementById("pname" + i).value.trim();
+        const age = Number(document.getElementById("page" + i).value);
+
+        if (!name || age < 1 || age > 120) {
+            document.getElementById("bookingError").textContent =
+                "Enter a valid name and age for every passenger.";
+            return;
+        }
+        passengers.push({name, age});
+    }
+
+    if (selectedSeats.length !== count) {
+        document.getElementById("bookingError").textContent =
+            `Please select exactly ${count} seat(s).`;
+        return;
+    }
+
+    if (!document.getElementById("paymentReference").value.trim()) {
+        document.getElementById("bookingError").textContent =
+            "Enter a demo payment reference.";
+        return;
+    }
+
+    const bookings = getBookings();
+    const taken = getBookedSeats(selectedFlight.id, selectedFlight.date);
+
+    if (selectedSeats.some(s => taken.includes(s))) {
+        alert("A selected seat is no longer available. Choose another seat.");
+        renderSeats();
+        return;
+    }
+
+    const booking = {
+        id: "SB" + Date.now().toString().slice(-8),
+        user: currentUser.email,
+        customerName: currentUser.name,
+        flightId: selectedFlight.id,
+        flightNo: selectedFlight.no,
+        from: selectedFlight.from,
+        to: selectedFlight.to,
+        date: selectedFlight.date,
+        depart: selectedFlight.depart,
+        arrive: selectedFlight.arrive,
+        travelClass: selectedFlight.travelClass,
+        seats: [...selectedSeats],
+        passengers,
+        total: selectedFlight.fare * count,
+        paymentMethod: document.getElementById("paymentMethod").value,
+        status: "Confirmed",
+        created: new Date().toLocaleString()
+    };
+
+    bookings.push(booking);
+    saveData(BOOKINGS, bookings);
+    renderTicket(booking);
+    showPage("ticketPage");
+}
+
+// TICKET DISPLAY AND PRINT
+function renderTicket(b) {
+    document.getElementById("ticketOutput").innerHTML = `
+        <div class="ticket">
+            <h2>✈ SkyBook E-Ticket</h2>
+            <p><b>Booking ID:</b> ${safe(b.id)}</p>
+            <p><b>Status:</b>
+                <span class="${b.status === "Cancelled" ? "cancelled" : "status"}">
+                    ${safe(b.status)}
+                </span>
+            </p>
+            <hr>
+            <div class="grid">
+                <div><small>From</small><h2>${safe(b.from)}</h2><b>${safe(b.depart)}</b></div>
+                <div><small>To</small><h2>${safe(b.to)}</h2><b>${safe(b.arrive)}</b></div>
+                <div><small>Travel Date</small><h3>${safe(b.date)}</h3></div>
+                <div><small>Flight / Class</small><h3>${safe(b.flightNo)} / ${safe(b.travelClass)}</h3></div>
+            </div>
+            <hr>
+            <h3>Passengers</h3>
+            <ul>${b.passengers.map(p =>
+                `<li>${safe(p.name)} - Age ${safe(p.age)}</li>`
+            ).join("")}</ul>
+            <p><b>Seats:</b> ${b.seats.map(safe).join(", ")}</p>
+            <p><b>Payment method:</b> ${safe(b.paymentMethod)} (demo)</p>
+            <h2>Total: ₹${Number(b.total).toLocaleString("en-IN")}</h2>
+            <p><small>Booking time: ${safe(b.created)}</small></p>
+        </div>`;
+}
+
+// BOOKING HISTORY AND CANCELLATION
+function renderTickets() {
+    const list = getBookings()
+        .filter(b => b.user === currentUser.email)
+        .reverse();
+
+    document.getElementById("ticketList").innerHTML = list.length ?
+        list.map(b => `
+            <div class="panel">
+                <h3>${safe(b.flightNo)}: ${safe(b.from)} → ${safe(b.to)}</h3>
+                <p>Date: ${safe(b.date)} | Booking ID: ${safe(b.id)}</p>
+                <p>Seats: ${b.seats.map(safe).join(", ")}</p>
+                <p>Total: ₹${Number(b.total).toLocaleString("en-IN")}</p>
+                <p class="${b.status === "Cancelled" ? "cancelled" : "status"}">
+                    ${safe(b.status)}
+                </p>
+                <div class="actions">
+                    <button onclick="viewTicket('${safe(b.id)}')">
+                        View / Print Ticket
+                    </button>
+                    ${b.status === "Confirmed" &&
+                      b.date >= new Date().toISOString().slice(0,10) ?
+                        `<button class="danger"
+                            onclick="cancelTicket('${safe(b.id)}')">
+                            Cancel Ticket
+                        </button>` : ""}
+                </div>
+            </div>
+        `).join("") : "<p>No tickets found. Search for a flight to book.</p>";
+}
+
+function viewTicket(id) {
+    const b = getBookings().find(
+        x => x.id === id && x.user === currentUser.email
+    );
+    if (b) {
+        renderTicket(b);
+        showPage("ticketPage");
+    }
+}
+
+function cancelTicket(id) {
+    if (!confirm("Cancel this ticket? This demo does not process refunds.")) return;
+
+    const bookings = getBookings();
+    const booking = bookings.find(
+        b => b.id === id && b.user === currentUser.email
+    );
+
+    if (booking) {
+        booking.status = "Cancelled";
+        saveData(BOOKINGS, bookings);
+        renderTickets();
+    }
+}
+
+// CUSTOMER FEEDBACK
+function submitFeedback() {
+    const message = document.getElementById("feedbackText").value.trim();
+
+    if (!message) {
+        alert("Please enter your feedback.");
+        return;
+    }
+
+    const feedback = getData(FEEDBACK);
+    feedback.push({
+        name: currentUser.name,
+        email: currentUser.email,
+        rating: document.getElementById("rating").value,
+        message,
+        date: new Date().toLocaleString()
+    });
+
+    saveData(FEEDBACK, feedback);
+    document.getElementById("feedbackText").value = "";
+    document.getElementById("feedbackMessage").textContent =
+        "Thank you! Feedback submitted successfully.";
+}
+
+// ADMIN REPORT
+function renderAdmin() {
+    const bookings = getBookings();
+    const confirmed = bookings.filter(b => b.status === "Confirmed");
+    const users = getData(USERS).filter(u => u.role === "customer");
+
+    document.getElementById("adminStats").innerHTML = `
+        <div class="panel">Total bookings<h2>${bookings.length}</h2></div>
+        <div class="panel">Confirmed<h2>${confirmed.length}</h2></div>
+        <div class="panel">Cancelled<h2>${bookings.length-confirmed.length}</h2></div>
+        <div class="panel">Customers<h2>${users.length}</h2></div>
+        <div class="panel">Confirmed demo sales<h2>₹${confirmed.reduce((s,b)=>s+b.total,0).toLocaleString("en-IN")}</h2></div>
+    `;
+
+    document.getElementById("adminReport").innerHTML = bookings.length ?
+        `<table>
+            <tr><th>Booking ID</th><th>Customer</th><th>Route</th>
+                <th>Date</th><th>Seats</th><th>Fare</th><th>Status</th></tr>
+            ${bookings.map(b => `
+                <tr>
+                    <td>${safe(b.id)}</td>
+                    <td>${safe(b.customerName)}<br>${safe(b.user)}</td>
+                    <td>${safe(b.from)} → ${safe(b.to)}</td>
+                    <td>${safe(b.date)}</td>
+                    <td>${b.seats.map(safe).join(", ")}</td>
+                    <td>₹${Number(b.total).toLocaleString("en-IN")}</td>
+                    <td>${safe(b.status)}</td>
+                </tr>
+            `).join("")}
+        </table>` : "<p>No bookings yet.</p>";
+
+    const feedback = getData(FEEDBACK);
+    document.getElementById("feedbackReport").innerHTML = feedback.length ?
+        feedback.map(f => `
+            <div class="panel">
+                <b>${safe(f.name)}</b> - ${safe(f.rating)}
+                <p>${safe(f.message)}</p>
+                <small>${safe(f.date)}</small>
+            </div>
+        `).join("") : "<p>No feedback received.</p>";
+}
+
+function addFlight() {
+    const no = document.getElementById("newFlightNo").value.trim();
+    const from = document.getElementById("newFrom").value.trim();
+    const to = document.getElementById("newTo").value.trim();
+    const depart = document.getElementById("newDeparture").value.trim();
+    const arrive = document.getElementById("newArrival").value.trim();
+    const fare = Number(document.getElementById("newFare").value);
+    const seats = Number(document.getElementById("newSeats").value);
+
+    if (!no || !from || !to || from.toLowerCase() === to.toLowerCase() ||
+        !depart || !arrive || fare <= 0 || seats < 1) {
+        alert("Enter valid details for all flight fields.");
+        return;
+    }
+
+    const flights = getData(FLIGHTS);
+
+    if (flights.some(f => f.no.toLowerCase() === no.toLowerCase())) {
+        alert("Flight number already exists.");
+        return;
+    }
+
+    flights.push({
+        id: "F" + Date.now(),
+        no, from, to, depart, arrive, fare, seats
+    });
+
+    saveData(FLIGHTS, flights);
+    alert("Sample flight added successfully.");
+    renderAdmin();
+}
+
+function exportReport() {
+    const bookings = getBookings();
+    const rows = [
+        ["Booking ID","Customer","Email","From","To","Date","Flight","Seats","Fare","Status"],
+        ...bookings.map(b => [
+            b.id, b.customerName, b.user, b.from, b.to, b.date,
+            b.flightNo, b.seats.join(" "), b.total, b.status
+        ])
+    ];
+
+    const csv = rows.map(row =>
+        row.map(value => '"' + String(value).replace(/"/g,'""') + '"').join(",")
+    ).join("\r\n");
+
+    const url = URL.createObjectURL(
+        new Blob([csv], {type:"text/csv;charset=utf-8;"})
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "flight_booking_report.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
+```
